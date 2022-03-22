@@ -1,0 +1,19 @@
+name: unet-from-scratch
+channels:
+  - conda-forge
+  - apple
+dependencies:
+  - python=3.9
+  - pip
+  - build
+  - black
+  - isort
+  - flake8
+  - flake8-bugbear
+  - pep8-naming
+  - pytest
+  - pytest-cov
+  - tensorflow-deps>=2.8,<3
+  - pip:
+    - tensorflow-macos>=2.8,<3
+    - tensorflow-metal
