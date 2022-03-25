@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 def conv_batchnorm_relu(filters, padding):
-    def layer(inputs):
+    def call(inputs):
         x = tf.keras.layers.Conv2D(
             filters,
             kernel_size=3,
@@ -14,16 +14,16 @@ def conv_batchnorm_relu(filters, padding):
         outputs = tf.keras.layers.Activation("relu")(x)
         return outputs
 
-    return layer
+    return call
 
 
 def double_conv_batchnorm_relu(filters, padding):
-    def layer(inputs):
+    def call(inputs):
         x = conv_batchnorm_relu(filters, padding)(inputs)
         outputs = conv_batchnorm_relu(filters, padding)(x)
         return outputs
 
-    return layer
+    return call
 
 
 def crop(inputs):
@@ -41,7 +41,7 @@ def crop(inputs):
 
 
 def encoder(filters, padding):
-    def layer(inputs):
+    def call(inputs):
         outputs = []
         x = inputs
         for i, _filters in enumerate(filters):
@@ -51,11 +51,11 @@ def encoder(filters, padding):
                 x = tf.keras.layers.MaxPool2D(strides=2)(x)
         return outputs
 
-    return layer
+    return call
 
 
 def decoder(num_classes, padding):
-    def layer(inputs):
+    def call(inputs):
         x = inputs[0]
         for shortcut in inputs[1:]:
             filters = shortcut.shape[-1]
@@ -74,7 +74,7 @@ def decoder(num_classes, padding):
         )(x)
         return outputs
 
-    return layer
+    return call
 
 
 def unet(
@@ -83,11 +83,11 @@ def unet(
     padding="valid",
     filters=(64, 128, 256, 512, 1024),
 ):
-    def layer(inputs):
+    def call(inputs):
         x = encoder(filters, padding)(inputs)
         outputs = decoder(num_classes, padding)(x)
         return outputs
 
     inputs = tf.keras.Input(shape=input_shape)
-    outputs = layer(inputs)
+    outputs = call(inputs)
     return tf.keras.Model(inputs, outputs)
