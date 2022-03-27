@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 def conv_batchnorm_relu(filters, padding):
-    def call(inputs):
+    def forward(inputs):
         x = tf.keras.layers.Conv2D(
             filters,
             kernel_size=3,
@@ -14,16 +14,16 @@ def conv_batchnorm_relu(filters, padding):
         outputs = tf.keras.layers.Activation("relu")(x)
         return outputs
 
-    return call
+    return forward
 
 
 def double_conv_batchnorm_relu(filters, padding):
-    def call(inputs):
+    def forward(inputs):
         x = conv_batchnorm_relu(filters, padding)(inputs)
         outputs = conv_batchnorm_relu(filters, padding)(x)
         return outputs
 
-    return call
+    return forward
 
 
 def crop(inputs):
@@ -40,8 +40,8 @@ def crop(inputs):
     return outputs
 
 
-def encoder(filters, padding):
-    def call(inputs):
+def encoder_fn(filters, padding):
+    def forward(inputs):
         outputs = []
         x = inputs
         for i, _filters in enumerate(filters):
@@ -51,11 +51,11 @@ def encoder(filters, padding):
                 x = tf.keras.layers.MaxPool2D(strides=2)(x)
         return outputs
 
-    return call
+    return forward
 
 
-def decoder(num_classes, padding):
-    def call(inputs):
+def decoder_fn(num_classes, padding):
+    def forward(inputs):
         x = inputs[0]
         for shortcut in inputs[1:]:
             filters = shortcut.shape[-1]
@@ -74,20 +74,21 @@ def decoder(num_classes, padding):
         )(x)
         return outputs
 
-    return call
+    return forward
 
 
 def unet(
-    input_shape=(572, 572, 1),
+    shape=(572, 572, 1),
     num_classes=2,
     padding="valid",
     filters=(64, 128, 256, 512, 1024),
 ):
-    def call(inputs):
-        x = encoder(filters, padding)(inputs)
-        outputs = decoder(num_classes, padding)(x)
-        return outputs
+    inputs = tf.keras.Input(shape)
+    x = encoder_fn(filters, padding)(inputs)
+    outputs = decoder_fn(num_classes, padding)(x)
 
-    inputs = tf.keras.Input(shape=input_shape)
-    outputs = call(inputs)
-    return tf.keras.Model(inputs, outputs)
+    encoder = tf.keras.Model(inputs, x, name="encoder")
+    decoder = tf.keras.Model(x, outputs, name="decoder")
+    autoencoder = tf.keras.Model(inputs, outputs, name="autoencoder")
+
+    return encoder, decoder, autoencoder

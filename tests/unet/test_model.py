@@ -4,8 +4,8 @@ from unet.model import unet
 
 
 def test_unet_with_valid_padding():
-    model = unet(
-        input_shape=(572, 572, 1),
+    _, _, autoencoder = unet(
+        shape=(572, 572, 1),
         num_classes=2,
         padding="valid",
         filters=(64, 128, 256, 512, 1024),
@@ -13,13 +13,13 @@ def test_unet_with_valid_padding():
     with tf.device("/device:CPU:0"):  # tensorflow-metal fix
         g = tf.random.Generator.from_seed(1)
         inputs = g.uniform(shape=(2, 572, 572, 1))
-    outputs = model(inputs)
+    outputs = autoencoder(inputs)
     assert outputs.shape == (2, 388, 388, 2)
 
 
 def test_unet_with_same_padding():
-    model = unet(
-        input_shape=(512, 512, 3),
+    _, _, autoencoder = unet(
+        shape=(512, 512, 3),
         num_classes=3,
         padding="same",
         filters=(64, 128, 256, 512, 1024),
@@ -27,5 +27,5 @@ def test_unet_with_same_padding():
     with tf.device("/device:CPU:0"):  # tensorflow-metal fix
         g = tf.random.Generator.from_seed(1)
         inputs = g.uniform(shape=(2, 512, 512, 3))
-    outputs = model(inputs)
+    outputs = autoencoder(inputs)
     assert outputs.shape == (2, 512, 512, 3)
