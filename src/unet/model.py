@@ -8,7 +8,6 @@ def conv_batchnorm_relu(filters, padding):
             kernel_size=3,
             padding=padding,
             use_bias=False,
-            kernel_initializer="he_normal",
         )(inputs)
         x = tf.keras.layers.BatchNormalization()(x)
         outputs = tf.keras.layers.Activation("relu")(x)
@@ -63,15 +62,10 @@ def decoder_fn(num_classes, padding):
                 filters,
                 kernel_size=2,
                 strides=2,
-                kernel_initializer="he_normal",
             )(x)
             x = tf.keras.layers.Concatenate()([crop([shortcut, x]), x])
             x = double_conv_batchnorm_relu(filters, padding)(x)
-        outputs = tf.keras.layers.Conv2D(
-            filters=num_classes,
-            kernel_size=1,
-            kernel_initializer="glorot_uniform",
-        )(x)
+        outputs = tf.keras.layers.Conv2D(filters=num_classes, kernel_size=1)(x)
         return outputs
 
     return forward
